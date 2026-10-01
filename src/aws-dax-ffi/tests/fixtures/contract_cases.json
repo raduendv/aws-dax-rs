@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "direct_operations": [
+    {
+      "operation": "get_item",
+      "request": {
+        "table_name": "Example",
+        "key": { "pk": { "kind": "string", "value": "item-1" } },
+        "consistent_read": true,
+        "projection_expression": "#name",
+        "expression_attribute_names": { "#name": "name" }
+      },
+      "response": {
+        "item": {
+          "pk": { "kind": "string", "value": "item-1" },
+          "name": { "kind": "string", "value": "example" }
+        }
+      }
+    },
+    {
+      "operation": "put_item",
+      "request": {
+        "table_name": "Example",
+        "item": {
+          "pk": { "kind": "string", "value": "item-1" },
+          "count": { "kind": "number", "value": "1" }
+        },
+        "return_values": "all_old",
+        "condition_expression": "attribute_not_exists(pk)",
+        "expression_attribute_names": {},
+        "expression_attribute_values": {}
+      },
+      "response": { "attributes": null }
+    },
+    {
+      "operation": "delete_item",
+      "request": {
+        "table_name": "Example",
+        "key": { "pk": { "kind": "string", "value": "item-1" } },
+        "return_values": "all_old",
+        "condition_expression": "#count = :count",
+        "expression_attribute_names": { "#count": "count" },
+        "expression_attribute_values": {
+          ":count": { "kind": "number", "value": "1" }
+        }
+      },
+      "response": {
+        "attributes": {
+          "pk": { "kind": "string", "value": "item-1" }
+        }
+      }
+    },
+    {
+      "operation": "update_item",
+      "request": {
+        "table_name": "Example",
+        "key": { "pk": { "kind": "string", "value": "item-1" } },
+        "update_expression": "SET #name = :name",
+        "condition_expression": null,
+        "expression_attribute_names": { "#name": "name" },
+        "expression_attribute_values": {
+          ":name": { "kind": "string", "value": "updated" }
+        },
+        "return_values": "all_old"
+      },
+      "response": {
+        "attributes": {
+          "name": { "kind": "string", "value": "example" }
+        }
+      }
+    },
+    {
+      "operation": "query",
+      "request": {
+        "table_name": "Example",
+        "index_name": "ByStatus",
+        "key_condition_expression": "#status = :status",
+        "filter_expression": "#enabled = :enabled",
+        "projection_expression": "pk, #status",
+        "expression_attribute_names": {
+          "#status": "status",
+          "#enabled": "enabled"
+        },
+        "expression_attribute_values": {
+          ":status": { "kind": "string", "value": "open" },
+          ":enabled": { "kind": "boolean", "value": true }
+        },
+        "consistent_read": false,
+        "limit": 10,
+        "scan_index_forward": true,
+        "select": "specific_attributes",
+        "return_consumed_capacity": "total",
+        "exclusive_start_key": null
+      },
+      "response": {
+        "items": [],
+        "count": 0,
+        "scanned_count": 0,
+        "last_evaluated_key": null,
+        "consumed_capacity": null
+      }
+    },
+    {
+      "operation": "scan",
+      "request": {
+        "table_name": "Example",
+        "index_name": null,
+        "filter_expression": "#enabled = :enabled",
+        "projection_expression": "pk",
+        "expression_attribute_names": { "#enabled": "enabled" },
+        "expression_attribute_values": {
+          ":enabled": { "kind": "boolean", "value": true }
+        },
+        "consistent_read": false,
+        "limit": 10,
+        "select": "specific_attributes",
+        "return_consumed_capacity": "total",
+        "exclusive_start_key": null
+      },
+      "response": {
+        "items": [],
+        "count": 0,
+        "scanned_count": 0,
+        "last_evaluated_key": null,
+        "consumed_capacity": null
+      }
+    }
+  ],
+  "batch_operations": [
+    {
+      "operation": "batch_get_item",
+      "request": {
+        "request_items": {
+          "Example": {
+            "keys": [{ "pk": { "kind": "string", "value": "item-1" } }],
+            "consistent_read": false,
+            "projection_expression": "pk",
+            "expression_attribute_names": {}
+          }
+        },
+        "return_consumed_capacity": "total"
+      },
+      "response": {
+        "responses": { "Example": [] },
+        "unprocessed_keys": {},
+        "consumed_capacity": []
+      }
+    },
+    {
+      "operation": "batch_write_item",
+      "request": {
+        "request_items": {
+          "Example": [
+            {
+              "kind": "put",
+              "item": { "pk": { "kind": "string", "value": "item-1" } }
+            },
+            {
+              "kind": "delete",
+              "key": { "pk": { "kind": "string", "value": "item-2" } }
+            }
+          ]
+        },
+        "return_consumed_capacity": "total",
+        "return_item_collection_metrics": "size"
+      },
+      "response": {
+        "unprocessed_items": {},
+        "consumed_capacity": [],
+        "item_collection_metrics": {}
+      }
+    }
+  ],
+  "transactions": [
+    {
+      "operation": "transact_get_items",
+      "request": {
+        "transact_items": [
+          {
+            "table_name": "Example",
+            "key": { "pk": { "kind": "string", "value": "item-1" } },
+            "projection_expression": "pk",
+            "expression_attribute_names": {}
+          }
+        ],
+        "return_consumed_capacity": "total"
+      },
+      "response": {
+        "responses": [{ "item": null }],
+        "consumed_capacity": []
+      }
+    },
+    {
+      "operation": "transact_write_items",
+      "request": {
+        "transact_items": [
+          {
+            "kind": "condition_check",
+            "table_name": "Example",
+            "key": { "pk": { "kind": "string", "value": "item-1" } },
+            "condition_expression": "attribute_exists(pk)",
+            "expression_attribute_names": {},
+            "expression_attribute_values": {},
+            "return_values_on_condition_check_failure": "all_old"
+          },
+          {
+            "kind": "put",
+            "table_name": "Example",
+            "item": { "pk": { "kind": "string", "value": "item-2" } },
+            "condition_expression": null,
+            "expression_attribute_names": {},
+            "expression_attribute_values": {},
+            "return_values_on_condition_check_failure": "none"
+          },
+          {
+            "kind": "delete",
+            "table_name": "Example",
+            "key": { "pk": { "kind": "string", "value": "item-3" } },
+            "condition_expression": null,
+            "expression_attribute_names": {},
+            "expression_attribute_values": {},
+            "return_values_on_condition_check_failure": "none"
+          },
+          {
+            "kind": "update",
+            "table_name": "Example",
+            "key": { "pk": { "kind": "string", "value": "item-4" } },
+            "update_expression": "SET #name = :name",
+            "condition_expression": null,
+            "expression_attribute_names": { "#name": "name" },
+            "expression_attribute_values": {
+              ":name": { "kind": "string", "value": "updated" }
+            },
+            "return_values_on_condition_check_failure": "all_old"
+          }
+        ],
+        "client_request_token": "fixture-token",
+        "return_consumed_capacity": "total",
+        "return_item_collection_metrics": "size"
+      },
+      "response": {
+        "consumed_capacity": [],
+        "item_collection_metrics": {}
+      }
+    }
+  ],
+  "error": {
+    "category": "service",
+    "message": "transaction canceled",
+    "operation": "TransactWriteItems",
+    "configuration_kind": null,
+    "transport_kind": null,
+    "service_kind": "transaction_canceled",
+    "request_id": "request-id",
+    "error_code": "TransactionCanceledException",
+    "status_code": 400,
+    "code_sequence": [4, 23, 31],
+    "cancellation_reasons": [
+      {
+        "code": "ConditionalCheckFailed",
+        "message": "condition failed",
+        "item_cbor_base64": "oQFhYQ=="
+      }
+    ]
+  },
+  "pagination": {
+    "query": { "has_more_pages": true, "next_page": "query_response" },
+    "scan": { "has_more_pages": true, "next_page": "scan_response" },
+    "batch_get_item": {
+      "has_more_pages": true,
+      "stop_on_duplicate_token": true,
+      "next_page": "batch_get_item_response"
+    }
+  },
+  "routing": {
+    "discovered_endpoint": {
+      "node_id": 1,
+      "hostname": "node.example",
+      "address_base64": "fwAAAQ==",
+      "port": 8111,
+      "role": 1,
+      "availability_zone": "us-east-1a",
+      "leader_session_id": 42
+    },
+    "endpoint_refresh": {
+      "added": [1],
+      "removed": [],
+      "retained": [],
+      "changed": []
+    },
+    "route_snapshot": {
+      "node_id": 1,
+      "dial_address": "127.0.0.1:8111",
+      "tls_server_name": "node.example",
+      "healthy": true,
+      "health_probe_healthy": true
+    }
+  }
+}

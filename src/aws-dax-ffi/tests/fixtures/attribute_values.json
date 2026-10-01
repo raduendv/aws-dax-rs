@@ -1,0 +1,27 @@
+[
+  { "kind": "string", "value": "hello" },
+  { "kind": "number", "value": "1234567890.0123456789" },
+  { "kind": "binary", "value_base64": "AAEC/w==" },
+  { "kind": "boolean", "value": true },
+  { "kind": "null" },
+  { "kind": "string_set", "values": ["alpha", "beta"] },
+  { "kind": "number_set", "values": ["-1", "2.50"] },
+  { "kind": "binary_set", "values_base64": ["AA==", "/w=="] },
+  {
+    "kind": "list",
+    "values": [
+      { "kind": "string", "value": "nested" },
+      { "kind": "number", "value": "3.14159" }
+    ]
+  },
+  {
+    "kind": "map",
+    "values": {
+      "enabled": { "kind": "boolean", "value": false },
+      "nested": {
+        "kind": "list",
+        "values": [{ "kind": "null" }]
+      }
+    }
+  }
+]

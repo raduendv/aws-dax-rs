@@ -1,0 +1,23 @@
+[workspace]
+members = [
+    "src/aws-dax-sdk",
+    "src/aws-dax-fuzz",
+    "src/aws-dax-ffi",
+]
+default-members = [
+    "src/aws-dax-sdk",
+    "src/aws-dax-ffi",
+]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/raduendv/aws-dax-rs"
+
+[workspace.dependencies]
+aws-config = "=1.8.0"
+aws-credential-types = "1.3.0"
+aws-sdk-dynamodb = "1.69.0"
+tokio = "1.48.0"

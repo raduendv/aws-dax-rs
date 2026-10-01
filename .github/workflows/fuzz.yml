@@ -1,0 +1,35 @@
+name: Bounded fuzzing
+
+on:
+  schedule:
+    - cron: "17 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-fuzz:
+    name: Bounded fuzz targets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+        with:
+          toolchain: stable
+      - name: Run finite campaigns
+        shell: bash
+        run: |
+          set -euo pipefail
+          for target in \
+            decode_attribute_value \
+            decode_compressed_attributes \
+            decode_transaction_cancellation_item \
+            decode_item_key \
+            encode_filter_expression \
+            ffi_attribute_value
+          do
+            cargo run -p aws-dax-fuzz --release --bin "$target" -- \
+              -runs=10000 -timeout=10
+          done

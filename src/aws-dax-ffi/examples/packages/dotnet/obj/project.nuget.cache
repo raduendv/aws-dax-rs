@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "CXGHzuq1854=",
+  "success": true,
+  "projectFilePath": "/Users/radugribincea/projects/aws/aws-dax-rs/src/aws-dax-ffi/examples/packages/dotnet/Check.csproj",
+  "expectedPackageFiles": [
+    "/Users/radugribincea/.nuget/packages/aws.dax.ffi/0.1.0/aws.dax.ffi.0.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}

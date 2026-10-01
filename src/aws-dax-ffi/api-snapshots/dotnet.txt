@@ -1,0 +1,55 @@
+    public static string FfiContractVersion()
+   public static async Task<string> FfiAsyncContractVersion() 
+public class BatchGetItemPaginator
+public class QueryPaginator
+public class ScanPaginator
+public enum DaxConfigurationErrorKind: int {
+public enum DaxErrorCategory: int {
+public enum DaxIpDiscovery: int {
+public enum DaxLogLevel: int {
+public enum DaxReturnConsumedCapacity: int {
+public enum DaxReturnItemCollectionMetrics: int {
+public enum DaxReturnValue: int {
+public enum DaxReturnValuesOnConditionCheckFailure: int {
+public enum DaxSelect: int {
+public enum DaxServiceErrorKind: int {
+public enum DaxTransportErrorKind: int {
+public interface IBatchGetItemPaginator
+public interface IQueryPaginator
+public interface IScanPaginator
+public record DaxAttributeValue {
+public record DaxBatchGetItemRequest
+public record DaxBatchGetItemResponse
+public record DaxBatchWriteAction {
+public record DaxBatchWriteItemRequest
+public record DaxBatchWriteItemResponse
+public record DaxCapacity
+public record DaxClientConfig
+public record DaxConsumedCapacity
+public record DaxDeleteItemRequest
+public record DaxDeleteItemResponse
+public record DaxDiscoveredEndpoint
+public record DaxEndpointRefresh
+public record DaxException
+public record DaxGetItemRequest
+public record DaxGetItemResponse
+public record DaxItemCollectionMetrics
+public record DaxKeysAndAttributes
+public record DaxPutItemRequest
+public record DaxPutItemResponse
+public record DaxQueryRequest
+public record DaxQueryResponse
+public record DaxRouteSnapshot
+public record DaxScanRequest
+public record DaxScanResponse
+public record DaxTransactGetAction
+public record DaxTransactGetItemsRequest
+public record DaxTransactGetItemsResponse
+public record DaxTransactGetResponse
+public record DaxTransactWriteAction {
+public record DaxTransactWriteItemsRequest
+public record DaxTransactWriteItemsResponse
+public record DaxTransactionCancellationReason
+public record DaxUpdateItemRequest
+public record DaxUpdateItemResponse
+public static class AwsDax {

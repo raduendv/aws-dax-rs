@@ -1,0 +1,18 @@
+{
+  "name": "aws-dax-ffi-live",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "live": "tsx live.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.750.0",
+    "@ubjs/core": "0.31.0-6",
+    "@ubjs/node": "0.31.0-6"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

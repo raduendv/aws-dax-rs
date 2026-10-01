@@ -1,0 +1,63 @@
+[package]
+name = "aws-dax-fuzz"
+version = "0.0.0"
+publish = false
+edition.workspace = true
+license.workspace = true
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+aws-sdk-dynamodb.workspace = true
+libfuzzer-sys = "0.4"
+
+[dependencies.aws-dax]
+path = "../aws-dax-sdk"
+version = "=0.1.0"
+
+[dependencies.aws-dax-ffi]
+path = "../aws-dax-ffi"
+version = "=0.1.0"
+
+[[bin]]
+name = "decode_attribute_value"
+path = "fuzz_targets/decode_attribute_value.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_compressed_attributes"
+path = "fuzz_targets/decode_compressed_attributes.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_transaction_cancellation_item"
+path = "fuzz_targets/decode_transaction_cancellation_item.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_item_key"
+path = "fuzz_targets/decode_item_key.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "encode_filter_expression"
+path = "fuzz_targets/encode_filter_expression.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ffi_attribute_value"
+path = "fuzz_targets/ffi_attribute_value.rs"
+test = false
+doc = false
+bench = false

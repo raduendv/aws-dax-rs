@@ -1,0 +1,10 @@
+[bindings.kotlin]
+package_name = "software.amazon.dax"
+
+[bindings.java]
+package_name = "software.amazon.dax"
+
+[bindings.csharp]
+namespace = "Aws.Dax"
+access_modifier = "public"
+global_methods_class_name = "AwsDax"

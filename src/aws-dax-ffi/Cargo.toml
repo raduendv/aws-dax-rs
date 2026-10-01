@@ -1,0 +1,78 @@
+[package]
+name = "aws-dax-ffi"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+description = "UniFFI bindings for the AWS DAX Rust SDK"
+repository.workspace = true
+license.workspace = true
+
+[lib]
+# `staticlib` is consumed only by the Phase 7 Go/cgo package; foreign ABI
+# exports remain the same cdylib surface used by the other generated packages.
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+aws-config.workspace = true
+aws-dax = { path = "../aws-dax-sdk", version = "=0.1.0" }
+aws-sdk-dynamodb.workspace = true
+aws-types = "1.3"
+clap = { version = "4.5", optional = true }
+thiserror = "2"
+tokio.workspace = true
+uniffi = { version = "=0.31.0", features = ["bindgen", "cli", "tokio"] }
+uniffi-bindgen-cs = { git = "https://github.com/NordSecurity/uniffi-bindgen-cs.git", rev = "e10ce410eb3a10cc19c7928b93ea8d84e038c034", version = "=0.11.0", optional = true }
+uniffi-bindgen-go = { git = "https://github.com/NordSecurity/uniffi-bindgen-go.git", rev = "0b7fb4ceef12021bd7f790cc516fa9133e001813", version = "=0.7.1", optional = true }
+uniffi-bindgen-java = { version = "=0.3.1", optional = true }
+uniffi-bindgen-node-js = { version = "=0.0.16", optional = true }
+ubrn-cli = { package = "uniffi-bindgen-react-native", git = "https://github.com/jhugman/uniffi-bindgen-react-native.git", rev = "3dd1cd1353750dc3bfbbf4bb4d4ccde26b0fbd2e", version = "=0.31.0-6", default-features = false, optional = true }
+
+[dev-dependencies]
+futures = "0.3"
+proptest = "1.6"
+serde_json = "1"
+tokio.workspace = true
+
+[features]
+bindgen-builtin = []
+bindgen-cs = ["dep:uniffi-bindgen-cs"]
+bindgen-go = ["dep:uniffi-bindgen-go"]
+bindgen-java = ["dep:uniffi-bindgen-java"]
+bindgen-js-koffi = ["dep:uniffi-bindgen-node-js"]
+bindgen-js-napi = ["dep:clap", "dep:ubrn-cli"]
+
+[[bin]]
+name = "uniffi-bindgen-kotlin"
+path = "src/bin/uniffi-bindgen-kotlin.rs"
+required-features = ["bindgen-builtin"]
+
+[[bin]]
+name = "uniffi-bindgen-python"
+path = "src/bin/uniffi-bindgen-python.rs"
+required-features = ["bindgen-builtin"]
+
+[[bin]]
+name = "uniffi-bindgen-cs"
+path = "src/bin/uniffi-bindgen-cs.rs"
+required-features = ["bindgen-cs"]
+
+[[bin]]
+name = "uniffi-bindgen-go"
+path = "src/bin/uniffi-bindgen-go.rs"
+required-features = ["bindgen-go"]
+
+[[bin]]
+name = "uniffi-bindgen-java"
+path = "src/bin/uniffi-bindgen-java.rs"
+required-features = ["bindgen-java"]
+
+[[bin]]
+name = "uniffi-bindgen-js-koffi"
+path = "src/bin/uniffi-bindgen-js-koffi.rs"
+required-features = ["bindgen-js-koffi"]
+
+[[bin]]
+name = "uniffi-bindgen-js-napi"
+path = "src/bin/uniffi-bindgen-js-napi.rs"
+required-features = ["bindgen-js-napi"]

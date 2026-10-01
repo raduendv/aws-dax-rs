@@ -1,0 +1,8 @@
+/target
+node_modules/
+__pycache__/
+*.py[cod]
+/aws-dax-go-v2/
+/src/aws-dax-fuzz/artifacts/
+/src/aws-dax-fuzz/coverage/
+/src/aws-dax-fuzz/target/

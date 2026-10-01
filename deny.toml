@@ -1,0 +1,75 @@
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+# These advisories currently come from the AWS SDK's transitive legacy
+# hyper/rustls compatibility graph. The affected packages cannot be upgraded
+# independently without replacing that upstream transport stack; revisit when
+# the pinned AWS SDK releases remove those legacy branches.
+ignore = [
+    "RUSTSEC-2026-0258",
+    "RUSTSEC-2025-0134",
+    "RUSTSEC-2026-0098",
+    "RUSTSEC-2026-0099",
+    "RUSTSEC-2026-0104",
+    "RUSTSEC-2026-0009",
+    # UniFFI 0.31-compatible third-party generators still depend on this
+    # legacy tooling. These crates are build-time generators, not shipped in
+    # the aws-dax runtime dependency graph.
+    "RUSTSEC-2024-0370",
+    "RUSTSEC-2024-0375",
+    "RUSTSEC-2024-0436",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "MPL-2.0",
+    "NCSA",
+    "Unicode-3.0",
+]
+
+[[licenses.clarify]]
+name = "uniffi-bindgen-cs"
+expression = "MPL-2.0"
+license-files = [{ path = "../LICENSE", hash = 0 }]
+
+[[licenses.clarify]]
+name = "uniffi-bindgen-go"
+expression = "MPL-2.0"
+license-files = [{ path = "../LICENSE", hash = 0 }]
+
+[[licenses.clarify]]
+name = "ubrn_bindgen"
+expression = "MPL-2.0"
+license-files = [{ path = "../../LICENSE", hash = 0 }]
+
+[[licenses.clarify]]
+name = "ubrn_common"
+expression = "MPL-2.0"
+license-files = [{ path = "../../LICENSE", hash = 0 }]
+
+[[licenses.clarify]]
+name = "uniffi-bindgen-react-native"
+expression = "MPL-2.0"
+license-files = [{ path = "../../LICENSE", hash = 0 }]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-git = [
+    "https://github.com/jhugman/uniffi-bindgen-react-native.git",
+    "https://github.com/NordSecurity/uniffi-bindgen-cs.git",
+    "https://github.com/NordSecurity/uniffi-bindgen-go.git",
+]

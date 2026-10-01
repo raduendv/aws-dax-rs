@@ -1,0 +1,37 @@
+[package]
+name = "aws-dax"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "AWS DAX client for Rust"
+documentation = "https://docs.rs/aws-dax"
+repository.workspace = true
+readme = "../../README.md"
+license.workspace = true
+categories = ["api-bindings", "database"]
+keywords = ["aws", "dax", "dynamodb"]
+include = [
+    "/src/**",
+    "/examples/**",
+    "/tests/**",
+    "/Cargo.toml",
+]
+
+[dependencies]
+aws-config.workspace = true
+aws-credential-types.workspace = true
+aws-sdk-dynamodb.workspace = true
+hmac = "0.12.1"
+num-bigint = "0.4.8"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sha2 = "0.10.9"
+time = { version = "0.3.44", features = ["formatting", "macros"] }
+tokio = { workspace = true, features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
+tokio-rustls = "0.26.4"
+rustls-native-certs = "0.8.2"
+url = "2.5.8"
+uuid = { version = "1.18.1", features = ["v4"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }

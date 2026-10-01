@@ -1,0 +1,11 @@
+{
+  "name": "aws-dax-ffi-packaging-tools",
+  "private": true,
+  "version": "0.1.0",
+  "devDependencies": {
+    "@ubjs/core": "0.31.0-6",
+    "@ubjs/node": "0.31.0-6",
+    "esbuild": "0.25.12",
+    "typescript": "5.9.3"
+  }
+}
