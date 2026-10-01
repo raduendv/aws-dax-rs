@@ -1,0 +1,37 @@
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+# These advisories currently come from the AWS SDK's transitive legacy
+# hyper/rustls compatibility graph. The affected packages cannot be upgraded
+# independently without replacing that upstream transport stack; revisit when
+# the pinned AWS SDK releases remove those legacy branches.
+ignore = [
+    "RUSTSEC-2026-0258",
+    "RUSTSEC-2025-0134",
+    "RUSTSEC-2026-0098",
+    "RUSTSEC-2026-0099",
+    "RUSTSEC-2026-0104",
+    "RUSTSEC-2026-0009",
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "Unicode-3.0",
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

@@ -1,0 +1,5 @@
+/target
+/aws-dax-go-v2/
+/fuzz/artifacts/
+/fuzz/coverage/
+/fuzz/target/

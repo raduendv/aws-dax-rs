@@ -1,0 +1,43 @@
+[package]
+name = "aws-dax-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+aws-sdk-dynamodb = "1.69.0"
+libfuzzer-sys = "0.4"
+
+[dependencies.aws-dax]
+path = ".."
+
+[[bin]]
+name = "decode_attribute_value"
+path = "fuzz_targets/decode_attribute_value.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_compressed_attributes"
+path = "fuzz_targets/decode_compressed_attributes.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_transaction_cancellation_item"
+path = "fuzz_targets/decode_transaction_cancellation_item.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "decode_item_key"
+path = "fuzz_targets/decode_item_key.rs"
+test = false
+doc = false
+bench = false

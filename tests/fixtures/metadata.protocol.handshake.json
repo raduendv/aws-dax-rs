@@ -1,0 +1,34 @@
+{
+  "schema_version": "dax-fixture/v1",
+  "fixture_id": "metadata.protocol.handshake",
+  "kind": "metadata",
+  "source": {
+    "repository": "github.com/aws/aws-dax-go-v2",
+    "revision": "287eea5d36462faac54175d1e89878804b524928",
+    "tag": "v1.0.3",
+    "path": "dax/internal/client/tube.go",
+    "symbol": "magic; agent; optional",
+    "generator": "reference-fixture-export",
+    "generator_version": "0.1.0"
+  },
+  "inputs": {
+    "operation": "connection_handshake_metadata"
+  },
+  "expected": {
+    "status": "ok",
+    "value": {
+      "magic": "J7yne5G",
+      "user_agent": "DaxGoV2Client-1.0.3"
+    }
+  },
+  "encoding": {
+    "input_format": "structured",
+    "output_format": "structured",
+    "canonicalization": "object keys are compared without ordering"
+  },
+  "redaction": {
+    "credentials": false,
+    "endpoints": false,
+    "customer_data": false
+  }
+}
