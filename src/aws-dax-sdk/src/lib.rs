@@ -15,6 +15,7 @@
 
 mod client;
 mod config;
+mod credentials;
 mod error;
 mod logging;
 mod operation;

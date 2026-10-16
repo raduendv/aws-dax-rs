@@ -309,8 +309,10 @@ impl<Stream> AsyncStream for Stream where
 }
 
 pub(crate) type BoxedStream = Box<dyn AsyncStream>;
-type DirectControlTube =
-    ControlTube<tokio::io::ReadHalf<BoxedStream>, tokio::io::WriteHalf<BoxedStream>>;
+type DirectControlTube = ControlTube<
+    tokio::io::BufReader<tokio::io::ReadHalf<BoxedStream>>,
+    tokio::io::WriteHalf<BoxedStream>,
+>;
 
 struct ConnectedControlTube {
     tube: DirectControlTube,
@@ -639,12 +641,11 @@ impl TcpControlExecutor {
             .await
     }
 
-    async fn connect_to(
+    async fn connect_tcp(
         &self,
         operation: &'static str,
         address: &str,
-        tls_server_name: Option<&str>,
-    ) -> Result<BoxedStream, Error> {
+    ) -> Result<TcpStream, Error> {
         let stream = if let Some(policy) = self.seed_ip_discovery {
             let resolved = lookup_host(address)
                 .await
@@ -673,6 +674,19 @@ impl TcpControlExecutor {
                 .await
                 .map_err(|error| io_error(operation, error))?
         };
+        stream
+            .set_nodelay(true)
+            .map_err(|error| io_error(operation, error))?;
+        Ok(stream)
+    }
+
+    async fn connect_to(
+        &self,
+        operation: &'static str,
+        address: &str,
+        tls_server_name: Option<&str>,
+    ) -> Result<BoxedStream, Error> {
+        let stream = self.connect_tcp(operation, address).await?;
         let Some(server_name) = tls_server_name else {
             return Ok(Box::new(stream));
         };
@@ -1010,6 +1024,24 @@ mod tests {
     fn seed_address_selection_rejects_an_unmatched_family() {
         let addresses = ["127.0.0.1:8111".parse().unwrap()];
         assert!(select_seed_addresses(IpDiscovery::Ipv6, &addresses).is_err());
+    }
+
+    #[tokio::test]
+    async fn seed_and_routed_tcp_connections_disable_nagle() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap().to_string();
+        let mut executor = TcpControlExecutor::new(
+            address.clone(),
+            "us-east-1",
+            SharedCredentialsProvider::new(Credentials::new("key", "secret", None, None, "test")),
+            Duration::from_secs(1),
+        );
+        for discovery in [Some(IpDiscovery::Ipv4), None] {
+            executor.seed_ip_discovery = discovery;
+            let stream = executor.connect_tcp("GetItem", &address).await.unwrap();
+            assert!(stream.nodelay().unwrap());
+            let _accepted = listener.accept().await.unwrap();
+        }
     }
 
     #[tokio::test]

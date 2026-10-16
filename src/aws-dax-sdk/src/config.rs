@@ -422,6 +422,10 @@ impl ConfigBuilder {
     }
 
     /// Sets the AWS credentials provider used for DAX authorization.
+    ///
+    /// The built configuration caches credentials across its seed and node
+    /// pools, coalesces concurrent refreshes, and refreshes before expiration.
+    /// Credentials without an expiration are reloaded every fifteen minutes.
     pub fn credentials_provider(mut self, provider: SharedCredentialsProvider) -> Self {
         self.config.credentials_provider = Some(provider);
         self
@@ -541,8 +545,16 @@ impl ConfigBuilder {
     }
 
     /// Finalizes the configuration after validating its deterministic fields.
-    pub fn build(self) -> Result<Config, ConfigError> {
+    pub fn build(mut self) -> Result<Config, ConfigError> {
         self.config.endpoints()?;
+        let source = self
+            .config
+            .credentials_provider
+            .take()
+            .expect("validated configuration has a credentials provider");
+        self.config.credentials_provider = Some(SharedCredentialsProvider::new(
+            crate::credentials::CachedCredentialsProvider::new(source),
+        ));
         Ok(self.config)
     }
 }

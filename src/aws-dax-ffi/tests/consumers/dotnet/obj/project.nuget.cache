@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "SuojMwg27k8=",
+  "dgSpecHash": "2cp+K6X1Nl8=",
   "success": true,
   "projectFilePath": "/Users/radugribincea/projects/aws/aws-dax-rs/src/aws-dax-ffi/tests/consumers/dotnet/Live.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/radugribincea/.nuget/packages/awssdk.core/3.7.400/awssdk.core.3.7.400.nupkg.sha512",
+    "/Users/radugribincea/.nuget/packages/awssdk.dynamodbv2/3.7.400/awssdk.dynamodbv2.3.7.400.nupkg.sha512"
+  ],
   "logs": []
 }

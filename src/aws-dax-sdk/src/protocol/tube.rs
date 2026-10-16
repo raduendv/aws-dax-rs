@@ -6,7 +6,7 @@ use aws_credential_types::Credentials;
 use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
 use time::OffsetDateTime;
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, BufReader, ReadHalf, WriteHalf};
 
 use super::{
     cbor::{write_bytes, write_i64, write_text, write_type},
@@ -56,7 +56,7 @@ pub(crate) struct ControlTube<Reader, Writer> {
     writer: Writer,
 }
 
-impl<Stream> ControlTube<ReadHalf<Stream>, WriteHalf<Stream>>
+impl<Stream> ControlTube<BufReader<ReadHalf<Stream>>, WriteHalf<Stream>>
 where
     Stream: AsyncRead + AsyncWrite + Unpin,
 {
@@ -68,7 +68,10 @@ where
             .await
             .map_err(StreamCborError::Io)?;
         writer.flush().await.map_err(StreamCborError::Io)?;
-        Ok(Self { reader, writer })
+        Ok(Self {
+            reader: BufReader::new(reader),
+            writer,
+        })
     }
 }
 
@@ -243,6 +246,64 @@ mod tests {
             .expect("fixed date is valid")
             .with_time(Time::from_hms(12, 36, 0).expect("fixed time is valid"))
             .assume_utc()
+    }
+
+    #[tokio::test]
+    async fn buffers_small_reads_and_preserves_read_ahead_between_operations() {
+        use std::{
+            pin::Pin,
+            sync::{
+                Arc,
+                atomic::{AtomicUsize, Ordering},
+            },
+            task::{Context, Poll},
+        };
+        use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+
+        struct CountingStream {
+            input: std::io::Cursor<Vec<u8>>,
+            reads: Arc<AtomicUsize>,
+        }
+        impl AsyncRead for CountingStream {
+            fn poll_read(
+                mut self: Pin<&mut Self>,
+                cx: &mut Context<'_>,
+                buf: &mut ReadBuf<'_>,
+            ) -> Poll<std::io::Result<()>> {
+                self.reads.fetch_add(1, Ordering::SeqCst);
+                Pin::new(&mut self.input).poll_read(cx, buf)
+            }
+        }
+        impl AsyncWrite for CountingStream {
+            fn poll_write(
+                self: Pin<&mut Self>,
+                _: &mut Context<'_>,
+                buf: &[u8],
+            ) -> Poll<std::io::Result<usize>> {
+                Poll::Ready(Ok(buf.len()))
+            }
+            fn poll_flush(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+                Poll::Ready(Ok(()))
+            }
+            fn poll_shutdown(
+                self: Pin<&mut Self>,
+                _: &mut Context<'_>,
+            ) -> Poll<std::io::Result<()>> {
+                Poll::Ready(Ok(()))
+            }
+        }
+        let reads = Arc::new(AtomicUsize::new(0));
+        let stream = CountingStream {
+            input: std::io::Cursor::new(vec![0x80, 0x82, 0x01, 0x02, 0x80, 0xf6]),
+            reads: reads.clone(),
+        };
+        let mut tube = ControlTube::from_stream(stream).await.unwrap();
+        assert_eq!(
+            tube.execute("Test", &[0x01]).await.unwrap(),
+            [0x80, 0x82, 0x01, 0x02]
+        );
+        assert_eq!(tube.execute("Test", &[0x02]).await.unwrap(), [0x80, 0xf6]);
+        assert_eq!(reads.load(Ordering::SeqCst), 1);
     }
 
     #[test]

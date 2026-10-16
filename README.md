@@ -71,6 +71,24 @@ chain and expects a reachable DAX discovery endpoint at
 `dax://example-cluster:8111`; it does not contain credentials or make network
 requests during compilation.
 
+### Credential caching and transport
+
+Each built DAX configuration caches credentials across its seed and routed
+connection pools, including health checks. Concurrent credential loads and
+refreshes are coalesced. Credentials are refreshed before expiration, with a
+margin of 10% of their remaining lifetime capped at 60 seconds. Credentials
+without an expiration are reloaded after 15 minutes. Refresh errors propagate;
+expired provider results are rejected rather than cached. Separate
+configurations do not share credential caches.
+
+TCP connections enable `TCP_NODELAY` before optional TLS negotiation. Each
+pooled connection retains a buffered response reader between operations so
+small CBOR reads do not each require an underlying socket read.
+
+These behaviors apply to native Rust and every FFI binding. Existing binary
+packages must be rebuilt to include the changes; no binding API changes are
+required.
+
 ## Current status
 
 The crate has completed its public-model phase and implements the supported DAX
