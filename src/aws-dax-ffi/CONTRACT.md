@@ -60,6 +60,15 @@ initializing it. Generation applies deterministic, fail-closed fixups for
 those two backend defects; the fixup script fails if the expected generated
 patterns change.
 
+Python generation also replaces the pinned backend's per-byte ctypes buffer
+writer with deterministic bytearray staging and one Rust-owned allocation/copy.
+The transform rejects unexpected templates or dependencies on removed builder
+internals. Scalar encodings, generated validation and ownership transfer stay
+unchanged. Discard before finalization allocates no Rust memory; failed copies
+free their allocation. This is a generation-time implementation detail, not an
+API change or runtime monkey patch. Tests compare baseline/optimized bytes,
+exercise real Rust conversions and verify allocation/failure cleanup.
+
 The first contract uses Rust's default AWS credential chain. Rust
 `SdkConfig`, `SharedCredentialsProvider`, `Logger`, and arbitrary foreign
 credential callbacks are not exported.

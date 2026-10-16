@@ -33,12 +33,34 @@ JavaScript generation uses the selected N-API backend. The Koffi backend
 remains available for comparison with
 `./scripts/generate_ffi_bindings.sh javascript-koffi`.
 
+Python generation applies a checked, deterministic staged-buffer writer after
+the ABI-integrity fixup. Serialization uses a Python bytearray followed by one
+Rust-owned allocation/copy, rather than per-byte ctypes writes. Public APIs,
+wire format, range checks and buffer ownership are unchanged. Unexpected
+generator templates fail generation and require review; generated or installed
+bindings must not be patched manually. This reduces conversion overhead but
+does not eliminate Python/Rust async scheduling or response-lifting costs.
+
 Verify that every selected backend generates byte-for-byte deterministic
 output with:
 
 ```sh
 ./scripts/check_ffi_bindings.sh
 ```
+
+This also runs staged-writer template/ownership tests and compares actual
+generated serialization with the pinned original writer, including real Rust
+attribute round trips. The focused offline tests are:
+
+```sh
+python3 scripts/tests/test_optimize_ffi_python.py
+python3 scripts/tests/test_python_buffer_bindings.py \
+  --binding target/ffi-bindings/python/aws_dax_ffi.py \
+  --native-library target/debug/libaws_dax_ffi.so
+```
+
+Use the corresponding `.dylib` or `.dll` native path on macOS or Windows.
+Omit both arguments to validate the wheel installed in the active interpreter.
 
 Construct a client from AWS SDK for Rust shared configuration and a DAX
 discovery endpoint:

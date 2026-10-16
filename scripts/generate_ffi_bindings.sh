@@ -38,6 +38,8 @@ generate_python() {
     --out-dir "$output_root/python"
   "$root_dir/scripts/fix_ffi_binding_integrity.sh" \
     python "$output_root/python"
+  python3 "$root_dir/scripts/optimize_ffi_python.py" \
+    "$output_root/python/aws_dax_ffi.py"
 }
 
 generate_go() {
