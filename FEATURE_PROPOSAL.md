@@ -42,14 +42,11 @@ not request publication approval.
   surfaces, and native package assembly.
 - **Preliminary live results:** generated clients in all six ecosystems
   successfully execute GetItem and PutItem workloads against DAX through the
-  shared Rust SDK. These runs demonstrate the core proof of concept: one Rust
-  implementation can serve multiple languages through FFI. The measurements
-  provide an initial development baseline, not an apples-to-apples performance
-  comparison; see Performance below.
-- **Next-stage validation:** build on this proof of concept with broader live
-  operation coverage, fault injection, artifact-only installation,
-  native-target validation, and performance characterization, including direct
-  Rust and isolated FFI overhead.
+  shared Rust SDK. The CloudWatch results provide an initial comparison of
+  populated FFI and native `scsg` (Single Client, Single Goroutine/Thread)
+  series; metric units and workload environment are not included in the export.
+- **Future work:** additional live validation and release preparation are
+  deferred from this proof of concept; see Future Projects and the GA criteria.
 - **Required before general availability:** stable public and FFI contracts,
   assigned long-term ownership, release evidence across the target matrix, and
   explicit publication approval.
@@ -413,7 +410,7 @@ and WebAssembly are not supported claims.
 
 Generated clients use the default AWS credential and region chains in Rust.
 Static credentials, arbitrary foreign credential callbacks, and foreign refresh
-providers are excluded pending a separate security and lifetime review.
+providers are excluded from the current proof of concept.
 
 ### Reference pinning
 
@@ -580,7 +577,7 @@ without adding customer-specific identifiers or recording customer data.
 
 ## Validation
 
-The implementation is validated in layers:
+The proof of concept includes the following validation evidence:
 
 - exact Go-derived CBOR and expression golden vectors;
 - unit and property tests for values, validation, caches, routing, and retries;
@@ -591,27 +588,23 @@ The implementation is validated in layers:
   shutdown tests;
 - generated API snapshots and deterministic binding generation for all six
   ecosystems;
-- clean artifact-only installation and native loading for every generated
-  package;
 - Clippy, formatting, documentation, package-content, and dependency-policy
   checks; and
-- opt-in plaintext and TLS live tests for all supported operations, discovery,
-  routing, paginators, structured errors, cancellation, and shutdown.
+- an opt-in live-test suite for plaintext and TLS operations, discovery,
+  routing, paginators, structured errors, cancellation, and shutdown. The live
+  benchmark results summarized here cover only GetItem and PutItem.
 
-**Preliminary results:** Live GetItem and PutItem runs demonstrate the shared
-Rust SDK serving generated clients across six ecosystems. They provide an
-initial performance baseline and support continued development of the FFI
-architecture, rather than a claim of production performance or release readiness.
+**Preliminary results:** The CloudWatch run contains populated GetItem and
+PutItem `scsg` series for generated clients across six ecosystems and their
+native counterparts. These results are an initial snapshot, not a claim of
+production performance or release readiness.
 
-| Evidence area | Status to record | Required details |
+| Evidence area | PoC evidence | Scope and limitations |
 | --- | --- | --- |
-| Test environment | Preliminary live benchmark completed | Generated clients use the shared Rust SDK in-process on EC2 `c6i.2xlarge`, Amazon Linux 2023 x86_64; three `dax.r5.large` nodes in eu-west-1; plaintext `dax://` |
-| Operation matrix | Preliminary GetItem/PutItem execution demonstrated | All six generated ecosystems exercised over plaintext on Linux x86_64; broader operation and behavioral parity, direct Rust, and TLS validation are next-stage work |
-| Fault injection | `[Pending]` | One-node TLS failure, recovery behavior, and cleanup result per ecosystem |
-| Package installation | `[Pending]` | Artifact-only installation, native loading, and absence of loader-path overrides |
-| Native targets | Linux x86_64 exercised in live workloads | All six generated ecosystems ran on `linux-x86_64`; broader package/native-binary validation and execution on `linux-aarch64`, `osx-x86_64`, `osx-arm64`, and `windows-x86_64` remain planned |
-| Performance | Preliminary PoC baseline: GetItem and PutItem, six ecosystems | Live workloads demonstrate the FFI execution path; the current PoC is slower than native baselines. Fixed single-worker throughput, mean latency, observed CPU, and scope are documented below |
-| Reports | Preliminary benchmark report available | [Benchmark results](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-md), including the Markdown report, CSV measurements, and JSON metadata |
+| Test environment | CloudWatch export available | Export labels identify `eu-west-1`; host, cluster, and transport details are not included in the CSV |
+| Operation matrix | Populated `scsg` GetItem/PutItem series | Six generated ecosystems and corresponding native clients have datapoints; broader operation and behavioral parity, direct Rust, and TLS validation are next-stage work |
+| Performance | Preliminary CloudWatch snapshot | Median FFI/native average ratios for populated `scsg` series and source CSV are documented below; metric units are not present in the export |
+| Reports | CloudWatch export available | [CloudWatch CSV](GetItem__PutItem-2026_10_16_09_45_00-2026_10_16_21_25_00-UTC.csv) |
 
 ## Versioning Strategy
 
@@ -642,94 +635,42 @@ The client adds DAX-specific validation, encoding, routing, and pool management
 inside the process. Persistent connection reuse, cached schemas and attribute
 lists, single-flight control loads, and bounded allocations limit overhead.
 
-#### Preliminary results: live native/FFI comparison
+#### Preliminary CloudWatch results
 
-The preliminary live runs documented in the
-[benchmark report](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-md)
-demonstrate that generated
-.NET, Go, Java, Node.js, Kotlin, and Python packages can execute GetItem and PutItem
-workloads against DAX through the same Rust SDK. This supports the feasibility
-of one shared implementation serving multiple language ecosystems in-process.
-The purpose of these runs is to demonstrate live execution through FFI and
-establish an initial development baseline, not to provide an apples-to-apples
-performance comparison. The existing clients provide reference measurements;
-the current PoC records lower throughput in this workload, but these results
-do not isolate the cost of FFI or establish the architecture's performance
-potential.
+The CloudWatch export contains populated `scsg` series for the six generated
+clients and the corresponding native clients. The table reports the median of
+the populated CloudWatch `Average` values, with the number of 300-second
+datapoints shown in parentheses. The CSV
+does not include metric-unit metadata, so values are left in the exported unit;
+they should not be treated as latency or throughput without the missing metric
+unit and definition metadata.
 
-Here, **native** means the existing client for each language, not direct Rust;
-**FFI** means the baseline generated `0.1.0` package built from Rust source
-`01babe0243e0278195d40a745e6c41d833e97b4b`, not the experimental Go candidate v5.
+| Language | Operation | FFI median average (n) | Native median average (n) | FFI/native median |
+| --- | --- | ---: | ---: | ---: |
+| .NET | GetItem | 376.8 (6) | 342.6 (6) | 1.100x |
+| .NET | PutItem | 5454.0 (7) | 5350.8 (6) | 1.019x |
+| Go | GetItem | 373.5 (7) | 325.6 (7) | 1.147x |
+| Go | PutItem | 5485.1 (6) | 5409.9 (7) | 1.014x |
+| Java | GetItem | 446.6 (7) | 376.1 (6) | 1.187x |
+| Java | PutItem | 5611.9 (7) | 5485.7 (7) | 1.023x |
+| Node.js | GetItem | 444.1 (6) | 400.0 (7) | 1.110x |
+| Node.js | PutItem | 5438.8 (6) | 5143.5 (6) | 1.057x |
+| Kotlin | GetItem | 441.7 (7) | 375.8 (7) | 1.175x |
+| Kotlin | PutItem | 5612.8 (6) | 5473.4 (7) | 1.025x |
+| Python | GetItem | 626.0 (7) | 446.5 (7) | 1.402x |
+| Python | PutItem | 5742.4 (7) | 5307.5 (7) | 1.082x |
 
-**Environment and method:**
-
-- Runner: EC2 `c6i.2xlarge`, Amazon Linux 2023 x86_64.
-- Cluster: three `dax.r5.large` nodes across `eu-west-1a`, `eu-west-1b`, and
-  `eu-west-1c`; plaintext `dax://`, not TLS.
-- Workload: GetItem and PutItem over sixteen previously seeded keys in
-  `ffi_benchmark_shared`, one worker, two-minute warmup and five-minute
-  measurement windows, three repetitions per comparison, alternating
-  native/FFI order. The single-worker rows define this comparison, not the
-  adaptive-worker or target-CPU settings retained in the workload metadata.
-- Runtimes: .NET 8.0.13, Go 1.26.0, OpenJDK 21.0.12.1, Node.js 22.23.2,
-  and CPython 3.13.15;
-  the Kotlin native baseline uses Kotlin 2.1.20 and the Java DAX client.
-- Native baselines: .NET `AWSSDK.DAX.Client` 4.1.0, Go `aws-dax-go-v2` 1.0.3, Java/Kotlin
-  `software.amazon.dax:amazon-dax-client` 2.0.11, Node.js
-  `@amazon-dax-sdk/lib-dax` 3.1.0, and Python `amazon-dax-client` 2.1.0.
-
-Throughput and mean latency below are medians across repetitions, not pooled
-latencies or latency percentiles. Observed CPU is the median of per-run means
-of fully contained whole-process minutes; it includes warmup, while local
-latency does not. This is not a matched-DAX-CPU comparison.
-
-| Language | Operation | Native ops/s | FFI ops/s | FFI/native | Native mean us | FFI mean us | Native observed CPU | FFI observed CPU |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| .NET | GetItem | 2881.98 | 173.30 | 0.060x | 345.79 | 5737.13 | 3.67% | 2.68% |
-| .NET | PutItem | 187.25 | 160.19 | 0.856x | 5338.59 | 6239.86 | 4.67% | 5.54% |
-| Go | GetItem | 2988.57 | 173.58 | 0.058x | 329.84 | 5741.31 | 4.12% | 2.94% |
-| Go | PutItem | 186.83 | 157.15 | 0.841x | 5346.25 | 6356.22 | 4.88% | 5.12% |
-| Java | GetItem | 2662.98 | 173.15 | 0.065x | 371.26 | 5763.79 | 3.42% | 3.41% |
-| Java | PutItem | 188.34 | 158.31 | 0.841x | 5301.69 | 6308.57 | 5.12% | 4.77% |
-| Node.js | GetItem | 2249.69 | 173.18 | 0.077x | 400.94 | 5707.49 | 3.30% | 2.60% |
-| Node.js | PutItem | 191.48 | 159.15 | 0.831x | 5178.44 | 6228.78 | 4.83% | 4.94% |
-| Kotlin | GetItem | 2627.94 | 174.01 | 0.066x | 376.14 | 5723.90 | 4.36% | 2.82% |
-| Kotlin | PutItem | 188.15 | 158.71 | 0.843x | 5306.45 | 6291.03 | 4.92% | 5.04% |
-| Python | GetItem | 2176.66 | 173.03 | 0.079x | 448.10 | 5751.25 | 3.44% | 2.56% |
-| Python | PutItem | 187.72 | 152.33 | 0.811x | 5311.18 | 6543.95 | 5.57% | 5.03% |
-
-**Interpretation:** The runs provide preliminary evidence that the FFI-based
-client model works across six ecosystems, while quantifying the performance
-work needed to develop the PoC further. In this workload, FFI GetItem
-throughput is 5.8%-7.9% of
-the corresponding native baseline, with mean latency around 5.71-5.76 ms
-versus 0.33-0.45 ms. FFI PutItem throughput is 81.1%-85.6% of native, with
-mean latency around 6.23-6.54 ms versus 5.18-5.35 ms. Improving performance,
-particularly GetItem, is a priority for the next development phase. These
-end-to-end comparisons do not isolate ABI overhead or identify a root cause;
-the measured gap should not be attributed to FFI alone.
-
-**Accepted warmup deviations:** The report includes all six ecosystems under
-a reviewed 10 ms warmup-only allowance, accepted on 2026-10-16. The .NET FFI
-GetItem run at index 14 (zero-based) was 6.9939 ms short of the 120-second
-warmup; the .NET native PutItem run at index 21 was 4.6791 ms short. All
-300-second measurement windows remain intact. No runs were repeated or
-repetitions removed; error checks and evidence validation are unchanged.
-
-**Supporting results:** The
-[benchmark gist](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-md)
-contains the Markdown report,
-[CSV measurements](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-csv)
-with ranges, and
-[JSON metadata](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-json)
-with workload, environment, artifact identities, and source hashes.
-
-The next step is to build on this feasibility evidence with profiling and
-optimization, then broaden benchmarking to direct Rust, isolated FFI overhead,
-TLS, concurrency scaling, tail latency, startup, memory, allocations, pool
-contention, failover, and additional native targets.
-The present results describe this fixed workload; they do not establish CPU
-efficiency, maximum throughput, or production readiness.
+The native Rust `scsg` series has medians of 324.3 for GetItem (6 datapoints)
+and 5317.0 for PutItem (6 datapoints); there is no corresponding generated
+Rust FFI client. The export contains no populated datapoints for `scmg` (Single
+Client, Multiple Goroutines/Threads) or `mcmg` (Multiple Clients, Multiple
+Goroutines/Threads), or for any error-labeled series, so those cases are not
+included.
+This is the benchmark snapshot summarized here.
+For populated `scsg` series, median FFI/native average ratios range from
+1.014x to 1.402x. The export does not include the metric definition or unit,
+so these ratios are descriptive only and do not establish latency, throughput,
+CPU efficiency, maximum throughput, or production readiness.
 
 ### Security and privacy
 
@@ -762,8 +703,8 @@ The preview must assign named owners for the following boundaries:
   provenance, credential handling, vulnerability response, and live-test
   environment ownership.
 
-The owner for each boundary is `[TBD]` until the preview operating model is
-approved.
+Owners for these boundaries have not been assigned in this proof of concept;
+ownership must be established before a public preview.
 
 ### Existing features and services
 
@@ -778,10 +719,27 @@ operations.
 - Review newer `aws-dax-go-v2` releases through an explicit parity update.
 - Add telemetry needed to measure operation-level adoption without customer
   data.
+- Review whether static credentials, foreign credential callbacks, or foreign
+  refresh providers can be supported safely across language and lifetime
+  boundaries.
 - Add optional handwritten idiomatic facades where customer feedback shows
   that generated APIs are insufficient, while keeping all DAX behavior in Rust.
 - Evaluate additional native targets and ecosystems only after the shared
   contract and release process are stable.
+- Add CloudWatch metric definitions and units, plus runner, cluster, transport,
+  runtime, artifact, and workload metadata to future benchmark reports.
+- Extend live performance characterization to direct Rust, isolated FFI
+  overhead, additional operations, TLS, concurrency, tail latency, startup,
+  memory, allocations, pool contention, and failover.
+- Run one-node TLS fault-injection tests and record recovery and cleanup results
+  for each generated ecosystem.
+- Validate artifact-only installation and package-relative native loading for
+  all six generated packages without loader-path overrides.
+- Validate native artifacts and execution across `linux-x86_64`,
+  `linux-aarch64`, `osx-x86_64`, `osx-arm64`, and `windows-x86_64`; the current
+  CloudWatch export does not identify its runner target.
+- Assign named owners for the Rust core, FFI contract, package distribution,
+  and security and operations before any public preview.
 
 ## Proposed Delivery Plan
 
@@ -922,11 +880,9 @@ pagination, and lifecycle behavior to `aws-dax`.
 | Standalone Rust SDK | All ten operations, three paginators, discovery, routing, retries, lifecycle, and structured errors implemented |
 | Shared FFI contract | Documented operation parity using FFI-owned bounded types; no AWS SDK types cross the ABI |
 | Generated ecosystems | Go, .NET, Java, Kotlin/JVM, Python, and Node/N-API generated from one pinned UniFFI train |
-| Preliminary live performance | GetItem/PutItem workloads run through the shared Rust SDK from .NET, Go, Java, Node.js, Kotlin, and Python, supporting FFI feasibility. The PoC is slower than native baselines: FFI/native throughput 0.058x-0.079x for reads and 0.811x-0.856x for writes in this plaintext single-worker workload. See Performance for methodology and scope |
-| Live operation coverage | Preliminary live GetItem/PutItem execution demonstrated across all six generated ecosystems on Linux x86_64 over plaintext; broader operation and behavioral parity, direct Rust, and TLS validation are next-stage work. See the [benchmark results](https://gist.github.com/raduendv/84d12d2f672afe30ef02d9427f9e0863#file-fixed-workload-complete-md) |
-| Failure behavior | `[Pending: record one-node TLS fault-injection and cleanup results for each generated ecosystem]` |
-| Package installation | `[Pending: record artifact-only installation and native-loading results without loader-path overrides]` |
-| Native targets | `linux-x86_64` exercised by all six generated ecosystems in live GetItem/PutItem workloads; broader package/native-binary validation and execution on `linux-aarch64`, `osx-x86_64`, `osx-arm64`, and `windows-x86_64` remain planned |
+| Preliminary live performance | CloudWatch `scsg` GetItem/PutItem series include all six generated ecosystems and corresponding native clients. Median FFI/native average ratios range from 1.014x to 1.402x; metric units and definition are absent, so these are descriptive observations only. See Performance and the [CloudWatch CSV](GetItem__PutItem-2026_10_16_09_45_00-2026_10_16_21_25_00-UTC.csv) |
+| Live operation coverage | CloudWatch export contains populated `scsg` GetItem/PutItem series for all six generated ecosystems; broader operation and behavioral parity, direct Rust, and TLS validation are next-stage work. See the [CloudWatch CSV](GetItem__PutItem-2026_10_16_09_45_00-2026_10_16_21_25_00-UTC.csv) |
+| Native targets | The CloudWatch export does not identify the runner target; see Future Projects for the target-matrix follow-up |
 | Integrity and supply chain | Deterministic archives, contract checksums, SHA-256 manifests, SBOMs, secret scanning, and provenance implemented |
 | Publication | Intentionally not performed; explicit approval remains required |
 
